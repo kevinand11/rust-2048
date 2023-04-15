@@ -1,3 +1,5 @@
+use rand::seq::SliceRandom;
+
 #[derive(Debug, Clone, Default)]
 pub struct GameData {
     pub arr: [[u8; 4]; 4],
@@ -12,6 +14,7 @@ impl GameData {
         get_old_idx: F1,
         get_new_idx: F2,
     ) {
+        let mut empty_spots: Vec<(usize, usize)> = Vec::new();
         for row in 0..4 {
             for col in 1..4 {
                 for idx in 0..col {
@@ -34,6 +37,16 @@ impl GameData {
                 }
             }
         }
+
+        for row in 0..4 {
+            for col in 0..4 {
+                if self.arr[row][col] == 0 {
+                    empty_spots.push((row, col));
+                }
+            }
+        }
+        let (row, col) = *empty_spots.choose(&mut rand::thread_rng()).unwrap();
+        self.arr[row][col] = 2;
     }
 
     pub fn up(&mut self) {
@@ -43,7 +56,7 @@ impl GameData {
         )
     }
 
-	pub fn down(&mut self) {
+    pub fn down(&mut self) {
         self.move_arr(
             |row: usize, col: usize, idx: usize| (3 - (col - idx), row),
             |row: usize, col: usize, idx: usize| (3 - (col - idx) + 1, row),
