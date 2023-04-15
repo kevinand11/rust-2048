@@ -8,6 +8,14 @@ pub struct GameData {
 }
 
 impl GameData {
+    pub fn is_busted(&mut self) -> bool {
+        self.busted
+    }
+
+    pub fn is_won(&mut self) -> bool {
+        self.score >= 2048
+    }
+
     fn move_arr<
         F1: Fn(usize, usize, usize) -> (usize, usize),
         F2: Fn(usize, usize, usize) -> (usize, usize),
@@ -108,5 +116,21 @@ impl GameData {
         game.add_random();
         game.add_random();
         game
+    }
+
+    pub fn print(&mut self) {
+        println!("Score: {} pts", self.score);
+        for row in 0..4 {
+            for col in 0..4 {
+                let val = self.arr[row][col];
+                let val = match val {
+                    0 => String::from("_"),
+                    val => val.to_string(),
+                };
+                print!(" {val} ");
+            }
+            println!("\n");
+        }
+        println!("\n");
     }
 }
