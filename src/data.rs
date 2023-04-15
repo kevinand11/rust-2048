@@ -1,13 +1,14 @@
-use rand::Rng;
+use rand::seq::SliceRandom;
 
 #[derive(Debug, Clone, Default)]
 pub struct GameData {
     arr: [[u64; 4]; 4],
     score: u64,
+    busted: bool,
 }
 
 impl GameData {
-    pub fn move_arr<
+    fn move_arr<
         F1: Fn(usize, usize, usize) -> (usize, usize),
         F2: Fn(usize, usize, usize) -> (usize, usize),
     >(
@@ -15,6 +16,8 @@ impl GameData {
         get_old_idx: F1,
         get_new_idx: F2,
     ) -> &Self {
+        let mut changed = false;
+
         for row in 0..4 {
             for col in 1..4 {
                 for idx in 0..col {
@@ -30,10 +33,11 @@ impl GameData {
 
                     if into_val == 0 || into_val == val {
                         self.arr[new_idx.0][new_idx.1] += val;
-						if into_val == val {
-                        	self.score += self.arr[new_idx.0][new_idx.1];
-						}
+                        if into_val == val {
+                            self.score += self.arr[new_idx.0][new_idx.1];
+                        }
                         self.arr[old_idx.0][old_idx.1] = 0;
+                        changed = true;
                     } else {
                         break;
                     }
@@ -41,7 +45,11 @@ impl GameData {
             }
         }
 
-        self.add_random()
+        if changed {
+            self.add_random();
+        }
+
+        self
     }
 
     pub fn up(&mut self) -> &Self {
@@ -73,17 +81,25 @@ impl GameData {
     }
 
     fn add_random(&mut self) -> &Self {
-        let mut rng = rand::thread_rng();
-        let rnd = rng.gen_range(0..15);
-        let row: usize = rnd / 4;
-        let col = rnd % 4;
+        let empty_slots = (0..16)
+            .filter_map(|num| {
+                let row = num / 4;
+                let col = num % 4;
+                match self.arr[row][col] {
+                    0 => Some((row, col)),
+                    _ => None,
+                }
+            })
+            .collect::<Vec<_>>();
 
-        if self.arr[row][col] != 0 {
-            return self.add_random();
+        let random = empty_slots.choose(&mut rand::thread_rng());
+
+        match random {
+            Some((row, col)) => {
+                self.arr[*row][*col] = 2;
+            }
+            None => self.busted = true,
         }
-
-        self.arr[row][col] = 2;
-
         self
     }
 
