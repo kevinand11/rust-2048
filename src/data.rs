@@ -124,7 +124,7 @@ impl GameData {
             for col in 0..4 {
                 let val = self.arr[row][col];
                 let val = match val {
-                    0 => String::from("_"),
+                    0 => String::from("-"),
                     val => val.to_string(),
                 };
                 print!(" {val} ");
